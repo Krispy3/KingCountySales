@@ -20,13 +20,10 @@ First get the data.
 
 To display the heatmap where we establish a baseline model and inspect the correlation matrix between each variable to help determine what we want to focus on in regards to pricing, use the following:
 
-`plt.figure(figsize=(14, 6))
-
-sns.heatmap(df.corr(), annot=True)
-
-plt.title('Correlation Matrix for Features')
-
-plt.show()`
+`plt.figure(figsize=(14, 6))`
+`sns.heatmap(df.corr(), annot=True)`
+`plt.title('Correlation Matrix for Features')`
+`plt.show()`
 
 The following code prepares the dataframe for analysis by eliminating NA values, taking the log of both price and sqft_living columns, and creates dummy data for two categorical variables:
 `df['l_price'] = np.log(df['price'])
