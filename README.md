@@ -14,42 +14,12 @@ The goal of this project is to use the dataset provided by King County, WA to ma
 
 ## Methodology
 
-First get the data.
+First read the data. Initially, we display a heatmap to help inform choices moving forward. here we see that the sqft_living has a relatively high correlation, and we note that for later incorporation into the final model. We then prepare our first model and displays its regression results for inspection of the initial model between ZIP code and log price. By comparing ZIP code, we already account for around half of the variance in the data with the r squared value of 0.533. Rule of thumb is that the skew should be less than +/-0.5 for proper regression and the kurtosis should not exceed 6 to ensure normality. Here, skew is too high at 0.594 and kurtosis is borderline, with a value of 5.132. We can fix this going forward.
 
-`df = pd.read_csv('data/kc_house_data.csv')`
+I selected the living area to incorporate into the multiple regression to boost the r squared value, indicating a much better fit and capturing much more variance. Using the log of the square footage for the living area does not change the r squared, but does eliminate some kurtosis and much of the skew. Both of these are further reduced by incorporating waterfront availability into the regression. This leaves us with a p-value of 0.833.
 
-To display the heatmap where we establish a baseline model and inspect the correlation matrix between each variable to help determine what we want to focus on in regards to pricing, use the following:
+Performing cross validation on this model with our dataset yields a similar p-value to the test set, within 0.004. This means that our model is not overfit, provided that there is no data leakage (a problem that did occur and was fixed).
 
-`plt.figure(figsize=(14, 6))`
-`sns.heatmap(df.corr(), annot=True)`
-`plt.title('Correlation Matrix for Features')`
-`plt.show()`
+## Conclusion
 
-The following code prepares the dataframe for analysis by eliminating NA values, taking the log of both price and sqft_living columns, and creates dummy data for two categorical variables:
-`df['l_price'] = np.log(df['price'])
-df['sqft_living_trans'] = np.log(df['sqft_living'])
-df_clean = df.dropna(axis = 0, how = 'any')
-df_dum = pd.get_dummies(df_clean, columns = ['waterfront', 'zipcode'], drop_first = True)`
-
-This prepares our first model and displays its regression results for inspection of the initial model between ZIP code and log price:
-`X1, y1 = df_dum.drop(['id', 'date', 'price', 'bedrooms', 'bathrooms', 'sqft_living',
-       'sqft_lot', 'floors', 'view', 'condition', 'grade', 'sqft_above',
-       'sqft_basement', 'yr_built', 'yr_renovated', 'lat', 'long',
-       'sqft_living15', 'sqft_lot15', 'l_price', 'grade_final', 'sqft_living_trans',
-       'waterfront_YES'], axis=1), df_dum['l_price']
-X1 = sm.add_constant(X1)
-baseline = sm.OLS(y1, X1).fit()
-baseline.summary()`
-By comparing ZIP code, we already account for around half of the variance in the data with the r squared value of 0.533. Rule of thumb is that the skew should be less than +/-0.5 for proper regression and the kurtosis should not exceed 6 to ensure normality. Here, skew is too high at 0.594 and kurtosis is borderline, with a value of 5.132. We can fix this going forward.
-
-The following code establishes our final model and displays the regression results:
-`X, y = df_dum.drop(['id', 'date', 'price', 'bedrooms', 'bathrooms',
-       'sqft_lot', 'floors', 'view', 'condition', 'grade', 'sqft_above',
-       'sqft_basement', 'yr_built', 'yr_renovated', 'lat', 'long',
-       'sqft_living15', 'sqft_lot15', 'l_price',
-            'sqft_living', 'grade_final'
-       ], axis=1), df_dum['l_price']
-X = sm.add_constant(X)
-model1 = sm.OLS(y, X).fit()
-model1.summary()`
-I selected the living area to incorporate into the multiple regression to boost the r squared value, indicating a much better fit and capturing much more variance. Using the log of the square footage for the living area does not change the r squared, but does eliminate some kurtosis and much of the skew. Conversely, incorporating the availability of waterfronts 
+This model takes two major factors that alone do not determine the price of a house and combines them to better infer their additive relationship to price, and tempers the skewness and kurtosis to acceptable levels by incorporating waterfront availability. In short, we can take this model and use it to analyze real world housing data with high confidence, accounting for prospectively 83.3 % of the variance in the data.
